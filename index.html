@@ -415,6 +415,7 @@
             elements.p2Label.innerText = mode === 'pvc' ? 'Computer' : (mode === 'pvp' ? 'Player 2' : 'Opponent');
             elements.p2Name.disabled = mode !== 'pvp';
             if (mode === 'pvc') elements.p2Name.value = "AI Bot";
+            if (mode === 'pvp') elements.p2Name.value = "Player 2";
             
             document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             if (mode === 'pvc') document.getElementById('pvcBtn').classList.add('active');
