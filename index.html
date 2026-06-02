@@ -3,60 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Useful Tools | noteforstudy1-tech</title>
+    <title>Connect 4 | useful-tools</title>
     <style>
+        :root {
+            --bg-color: #0f172a;
+            --board-color: #1e293b;
+            --slot-color: #334155;
+            --player1-color: #ef4444;
+            --player2-color: #f59e0b;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            text-align: center;
+            overflow: hidden;
         }
+
         h1 {
-            color: #38bdf8;
-            font-size: 3rem;
+            color: var(--accent-color);
             margin-bottom: 0.5rem;
+            font-weight: 800;
         }
-        p {
-            color: #94a3b8;
+
+        .status-container {
+            margin-bottom: 1.5rem;
             font-size: 1.2rem;
-            max-width: 600px;
+            font-weight: 600;
+            height: 2rem;
         }
-        .status {
-            margin-top: 2rem;
-            padding: 1rem 2rem;
-            background: #1e293b;
-            border-radius: 8px;
-            border: 1px solid #334155;
+
+        #status {
+            transition: all 0.3s ease;
         }
-        .pulse {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #10b981;
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 10px;
+            background-color: var(--board-color);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 2px solid #334155;
+        }
+
+        .slot {
+            width: 60px;
+            height: 60px;
+            background-color: var(--slot-color);
             border-radius: 50%;
-            margin-right: 8px;
-            box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
-            animation: pulse 2s infinite;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease;
+            position: relative;
         }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+
+        .slot:hover:not(.filled) {
+            transform: scale(1.1);
+            background-color: #475569;
+        }
+
+        .slot.filled {
+            cursor: default;
+        }
+
+        .slot.player1 {
+            background-color: var(--player1-color);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 0 20px rgba(239, 68, 68, 0.4);
+            animation: drop 0.5s cubic-bezier(0.47, 0, 0.745, 0.715);
+        }
+
+        .slot.player2 {
+            background-color: var(--player2-color);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 0 20px rgba(245, 158, 11, 0.4);
+            animation: drop 0.5s cubic-bezier(0.47, 0, 0.745, 0.715);
+        }
+
+        @keyframes drop {
+            0% { transform: translateY(-300px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .controls {
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 0.75rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .win-line {
+            position: absolute;
+            background-color: white;
+            z-index: 10;
+        }
+
+        @media (max-width: 500px) {
+            .slot {
+                width: 40px;
+                height: 40px;
+                gap: 5px;
+            }
+            .board {
+                padding: 10px;
+                gap: 5px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Useful Tools</h1>
-    <p>The centralized hub for all scripts, utilities, and experiments by <strong>noteforstudy1-tech</strong>, built with the Gemini CLI.</p>
+
+    <h1>Connect 4</h1>
     
-    <div class="status">
-        <span class="pulse"></span> System Online & Connected to GitHub
+    <div class="status-container">
+        <span id="status">Red's Turn</span>
     </div>
+
+    <div class="board" id="board">
+        <!-- 42 slots (6x7) generated by JS -->
+    </div>
+
+    <div class="controls">
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+
+    <script>
+        const ROWS = 6;
+        const COLS = 7;
+        let currentPlayer = 1; // 1 for Red, 2 for Yellow
+        let gameActive = true;
+        let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
+
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const slot = document.createElement('div');
+                    slot.classList.add('slot');
+                    slot.dataset.row = r;
+                    slot.dataset.col = c;
+                    slot.addEventListener('click', () => handleMove(c));
+                    boardElement.appendChild(slot);
+                }
+            }
+        }
+
+        function handleMove(col) {
+            if (!gameActive) return;
+
+            // Find the lowest available row in this column
+            let row = -1;
+            for (let r = ROWS - 1; r >= 0; r--) {
+                if (board[r][col] === 0) {
+                    row = r;
+                    break;
+                }
+            }
+
+            if (row === -1) return; // Column is full
+
+            // Update board state
+            board[row][col] = currentPlayer;
+            updateUI(row, col);
+
+            if (checkWin(row, col)) {
+                gameActive = false;
+                statusElement.innerText = (currentPlayer === 1 ? "Red" : "Yellow") + " Wins! 🎉";
+                statusElement.style.color = currentPlayer === 1 ? 'var(--player1-color)' : 'var(--player2-color)';
+                return;
+            }
+
+            if (board.flat().every(cell => cell !== 0)) {
+                gameActive = false;
+                statusElement.innerText = "It's a Draw! 🤝";
+                return;
+            }
+
+            // Switch player
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            statusElement.innerText = (currentPlayer === 1 ? "Red" : "Yellow") + "'s Turn";
+            statusElement.style.color = currentPlayer === 1 ? 'var(--player1-color)' : 'var(--player2-color)';
+        }
+
+        function updateUI(row, col) {
+            const index = row * COLS + col;
+            const slot = boardElement.children[index];
+            slot.classList.add('filled');
+            slot.classList.add(currentPlayer === 1 ? 'player1' : 'player2');
+        }
+
+        function checkWin(r, c) {
+            const player = board[r][c];
+            const directions = [
+                [[0, 1], [0, -1]], // Horizontal
+                [[1, 0], [-1, 0]], // Vertical
+                [[1, 1], [-1, -1]], // Diagonal \
+                [[1, -1], [-1, 1]]  // Diagonal /
+            ];
+
+            for (const dir of directions) {
+                let count = 1;
+                for (const [dr, dc] of dir) {
+                    let row = r + dr;
+                    let col = c + dc;
+                    while (row >= 0 && row < ROWS && col >= 0 && col < COLS && board[row][col] === player) {
+                        count++;
+                        row += dr;
+                        col += dc;
+                    }
+                }
+                if (count >= 4) return true;
+            }
+            return false;
+        }
+
+        function resetGame() {
+            board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            currentPlayer = 1;
+            gameActive = true;
+            statusElement.innerText = "Red's Turn";
+            statusElement.style.color = 'var(--player1-color)';
+            createBoard();
+        }
+
+        createBoard();
+    </script>
 </body>
 </html>
