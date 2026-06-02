@@ -179,6 +179,11 @@
         <button class="audio-toggle" id="audioToggle" onclick="toggleAudio()" title="Toggle Music">🎵</button>
     </div>
 
+    <!-- Hidden audio element for coolaudio.mp3 -->
+    <audio id="bgMusic" loop>
+        <source src="coolaudio.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         const ROWS = 6;
         const COLS = 7;
@@ -188,59 +193,30 @@
         let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
         let audioEnabled = false;
 
-        // Web Audio API components
-        let audioCtx = null;
-        let musicOscillator = null;
-        let musicGain = null;
-
         const boardElement = document.getElementById('board');
         const statusElement = document.getElementById('status');
+        const bgMusic = document.getElementById('bgMusic');
 
-        function initAudio() {
-            if (audioCtx) return;
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            startBackgroundMusic();
-        }
+        // Web Audio API for sound effects only
+        let audioCtx = null;
 
-        function startBackgroundMusic() {
-            if (!audioCtx) return;
-            
-            musicOscillator = audioCtx.createOscillator();
-            musicGain = audioCtx.createGain();
-            
-            musicOscillator.type = 'triangle';
-            
-            // Simple 4-note loop logic
-            const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
-            let currentNote = 0;
-            
-            musicOscillator.connect(musicGain);
-            musicGain.connect(audioCtx.destination);
-            
-            musicGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            musicOscillator.start();
-
-            // Simple "melody"
-            setInterval(() => {
-                if (audioEnabled) {
-                    musicOscillator.frequency.setTargetAtTime(notes[currentNote], audioCtx.currentTime, 0.1);
-                    currentNote = (currentNote + 1) % notes.length;
-                }
-            }, 1000);
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
         }
 
         function toggleAudio() {
-            if (!audioCtx) initAudio();
+            initAudioContext();
             audioEnabled = !audioEnabled;
             const btn = document.getElementById('audioToggle');
             btn.innerText = audioEnabled ? '🔊' : '🔇';
             
-            if (musicGain) {
-                musicGain.gain.setTargetAtTime(audioEnabled ? 0.05 : 0, audioCtx.currentTime, 0.1);
-            }
-            
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
+            if (audioEnabled) {
+                bgMusic.play().catch(e => console.log("Audio play failed:", e));
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+            } else {
+                bgMusic.pause();
             }
         }
 
@@ -249,7 +225,6 @@
             
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             
@@ -295,7 +270,7 @@
 
         function playerMove(col) {
             if (!gameActive || (gameMode === 'pvc' && currentPlayer === 2)) return;
-            if (!audioCtx) initAudio(); // Init audio on first interaction
+            initAudioContext();
             handleMove(col);
         }
 
