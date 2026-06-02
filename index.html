@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect 4 Online | useful-tools</title>
+    <title>Connect 4 Pro | useful-tools</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -13,6 +13,7 @@
             --player2-color: #f59e0b;
             --text-color: #f8fafc;
             --accent-color: #38bdf8;
+            --multi-color: #8b5cf6;
         }
 
         body {
@@ -25,27 +26,36 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         h1 {
             color: var(--accent-color);
             margin-bottom: 0.2rem;
             font-weight: 800;
+            font-size: 2.5rem;
         }
 
         .made-by {
             font-size: 0.9rem;
             color: #94a3b8;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
             letter-spacing: 1px;
             text-transform: uppercase;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            max-width: 100%;
         }
 
         .player-inputs {
             display: flex;
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .player-input-group {
@@ -56,49 +66,51 @@
         }
 
         .player-input-group label {
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 0.75rem;
+            font-weight: 700;
             text-transform: uppercase;
+            color: #64748b;
         }
 
-        input {
+        input[type="text"] {
             background: #1e293b;
             border: 2px solid #334155;
             color: white;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
+            padding: 0.5rem;
+            border-radius: 8px;
             font-size: 0.9rem;
-            width: 120px;
+            width: 130px;
             text-align: center;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
-        input:focus {
+        input[type="text"]:focus {
             outline: none;
             border-color: var(--accent-color);
+            background: #0f172a;
         }
 
-        input#p1Name { border-left: 5px solid var(--player1-color); }
-        input#p2Name { border-left: 5px solid var(--player2-color); }
+        #p1Name { border-bottom: 3px solid var(--player1-color); }
+        #p2Name { border-bottom: 3px solid var(--player2-color); }
 
         .status-container {
-            margin-bottom: 1.5rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-            height: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin-bottom: 1rem;
+            text-align: center;
+            min-height: 3rem;
         }
 
         #status {
-            transition: all 0.3s ease;
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: block;
         }
 
-        #roomInfo {
-            font-size: 0.8rem;
-            color: #64748b;
-            margin-top: 0.3rem;
+        #roomDisplay {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-top: 0.2rem;
+            display: none;
         }
 
         .board {
@@ -108,486 +120,405 @@
             gap: 10px;
             background-color: var(--board-color);
             padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            border: 2px solid #334155;
-            position: relative;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            border: 4px solid #334155;
         }
 
         .slot {
-            width: 60px;
-            height: 60px;
+            width: 55px;
+            height: 55px;
             background-color: var(--slot-color);
             border-radius: 50%;
             cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease;
+            transition: all 0.2s ease;
             position: relative;
         }
 
         .slot:hover:not(.filled) {
-            transform: scale(1.1);
+            transform: scale(1.08);
             background-color: #475569;
         }
 
-        .slot.filled {
-            cursor: default;
-        }
-
-        .slot.player1 {
-            background-color: var(--player1-color);
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 0 20px rgba(239, 68, 68, 0.4);
-            animation: drop 0.5s cubic-bezier(0.47, 0, 0.745, 0.715);
-        }
-
-        .slot.player2 {
-            background-color: var(--player2-color);
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 0 20px rgba(245, 158, 11, 0.4);
-            animation: drop 0.5s cubic-bezier(0.47, 0, 0.745, 0.715);
-        }
+        .slot.player1 { background-color: var(--player1-color); animation: drop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: inset 0 0 15px rgba(0,0,0,0.3); }
+        .slot.player2 { background-color: var(--player2-color); animation: drop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: inset 0 0 15px rgba(0,0,0,0.3); }
 
         @keyframes drop {
-            0% { transform: translateY(-300px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+            0% { transform: translateY(-300px); }
+            100% { transform: translateY(0); }
         }
 
-        .controls {
-            margin-top: 1.5rem;
+        .main-controls {
             display: flex;
-            gap: 1rem;
-            align-items: center;
+            gap: 0.8rem;
+            margin-top: 1rem;
             flex-wrap: wrap;
             justify-content: center;
         }
 
+        .multiplayer-controls {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 0.8rem;
+            padding: 1rem;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            border: 1px dashed #334155;
+        }
+
         button {
-            padding: 0.75rem 1.2rem;
+            padding: 0.6rem 1.2rem;
             font-size: 0.9rem;
-            font-weight: 600;
-            background-color: var(--accent-color);
-            color: var(--bg-color);
+            font-weight: 700;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        button.secondary {
-            background-color: #334155;
-            color: white;
-        }
-
-        button.multiplayer {
-            background-color: #8b5cf6;
-            color: white;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
-        }
-
-        .active-mode {
-            outline: 3px solid var(--accent-color);
-            outline-offset: 2px;
-        }
-
-        .audio-toggle {
-            background: none;
-            border: 2px solid var(--accent-color);
-            color: var(--accent-color);
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            padding: 0;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
+            gap: 0.5rem;
         }
 
-        @media (max-width: 500px) {
-            .slot { width: 40px; height: 40px; }
-            .board { padding: 10px; gap: 5px; }
-            input { width: 100px; }
+        button.primary { background-color: var(--accent-color); color: var(--bg-color); }
+        button.secondary { background-color: #334155; color: white; }
+        button.multi { background-color: var(--multi-color); color: white; }
+        
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        button:active { transform: translateY(0); }
+        button.active { outline: 3px solid white; outline-offset: 2px; }
+
+        .audio-settings {
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: #1e293b;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+        }
+
+        .audio-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .volume-slider {
+            width: 80px;
+            accent-color: var(--accent-color);
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 0;
+            color: white;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .icon-btn:hover { opacity: 1; }
+        .icon-btn.muted { color: #ef4444; opacity: 1; }
+
+        @media (max-width: 600px) {
+            .slot { width: 42px; height: 42px; }
+            h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
 
-    <h1>Connect 4</h1>
-    <div class="made-by">Made by Raghav Parashar</div>
+    <div class="game-container">
+        <h1>Connect 4</h1>
+        <div class="made-by">Made by Raghav Parashar</div>
 
-    <div class="player-inputs">
-        <div class="player-input-group">
-            <label for="p1Name">Player 1</label>
-            <input type="text" id="p1Name" value="Red" maxlength="12">
+        <div class="player-inputs">
+            <div class="player-input-group">
+                <label>Player 1</label>
+                <input type="text" id="p1Name" value="Raghav" maxlength="10">
+            </div>
+            <div class="player-input-group">
+                <label id="p2Label">Computer</label>
+                <input type="text" id="p2Name" value="AI Bot" maxlength="10">
+            </div>
         </div>
-        <div class="player-input-group">
-            <label for="p2Name" id="p2Label">Computer</label>
-            <input type="text" id="p2Name" value="Yellow" maxlength="12">
+
+        <div class="status-container">
+            <span id="status">Welcome!</span>
+            <span id="roomDisplay">ROOM: ----</span>
+        </div>
+
+        <div class="board" id="board"></div>
+
+        <div class="main-controls">
+            <button id="pvcBtn" class="primary active" onclick="setMode('pvc')">🤖 vs AI</button>
+            <button id="pvpBtn" class="secondary" onclick="setMode('pvp')">👥 Local</button>
+            <button class="secondary" onclick="resetGame()">🔄 Reset</button>
+        </div>
+
+        <div class="multiplayer-controls">
+            <button class="multi" onclick="createRoom()">➕ Create Room</button>
+            <button class="multi" onclick="joinRoom()">🔗 Join Room</button>
+        </div>
+
+        <div class="audio-settings">
+            <div class="audio-group">
+                <button class="icon-btn muted" id="musicToggle" onclick="toggleMusic()">🎵</button>
+                <input type="range" class="volume-slider" id="musicVol" min="0" max="1" step="0.1" value="0.5" oninput="updateVolume()">
+            </div>
+            <div class="audio-group">
+                <button class="icon-btn" id="sfxToggle" onclick="toggleSFX()">🔊</button>
+            </div>
         </div>
     </div>
-    
-    <div class="status-container">
-        <span id="status">Loading...</span>
-        <span id="roomInfo"></span>
-    </div>
 
-    <div class="board" id="board"></div>
+    <audio id="bgMusic" loop src="coolbgmusic.mp3"></audio>
 
-    <div class="controls">
-        <button id="pvcBtn" class="active-mode" onclick="setMode('pvc')">vs Computer</button>
-        <button id="pvpBtn" class="secondary" onclick="setMode('pvp')">vs Human (Local)</button>
-        <button id="onlineBtn" class="multiplayer" onclick="startOnlineMultiplayer()">Play Online</button>
-        <button onclick="resetGame()">Reset</button>
-        <button class="audio-toggle" id="audioToggle" onclick="toggleAudio()" title="Toggle Music">🎵</button>
-    </div>
-
-    <audio id="bgMusic" loop>
-        <source src="coolbgmusic.mp3" type="audio/mpeg">
-    </audio>
-
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
     <script>
-        // --- Firebase Config (Public Realtime Database) ---
-        // Using a dedicated temporary project for this game
-        const firebaseConfig = {
-            databaseURL: "https://connect4-multiplayer-default-rtdb.firebaseio.com/"
-        };
+        // --- Firebase Config ---
+        const firebaseConfig = { databaseURL: "https://connect4-multiplayer-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const ROWS = 6;
-        const COLS = 7;
-        let currentPlayer = 1;
-        let myPlayerNum = null; // 1 or 2 in online mode
-        let gameActive = true;
-        let gameMode = 'pvc'; // 'pvp', 'pvc', or 'online'
+        // --- Game State ---
+        const ROWS = 6, COLS = 7;
         let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-        let audioEnabled = false;
-        let currentRoomId = null;
+        let currentPlayer = 1, gameActive = true, gameMode = 'pvc', myNum = null, currentRoom = null;
+        let musicEnabled = false, sfxEnabled = true;
 
-        const boardElement = document.getElementById('board');
-        const statusElement = document.getElementById('status');
-        const roomInfoElement = document.getElementById('roomInfo');
-        const bgMusic = document.getElementById('bgMusic');
-        const p1Input = document.getElementById('p1Name');
-        const p2Input = document.getElementById('p2Name');
-        const p2Label = document.getElementById('p2Label');
+        const elements = {
+            board: document.getElementById('board'),
+            status: document.getElementById('status'),
+            room: document.getElementById('roomDisplay'),
+            p1Name: document.getElementById('p1Name'),
+            p2Name: document.getElementById('p2Name'),
+            p2Label: document.getElementById('p2Label'),
+            bgMusic: document.getElementById('bgMusic'),
+            musicVol: document.getElementById('musicVol')
+        };
 
+        // --- Audio Logic ---
         let audioCtx = null;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-        function initAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
-
-        function toggleAudio() {
-            initAudioContext();
-            audioEnabled = !audioEnabled;
-            const btn = document.getElementById('audioToggle');
-            btn.innerText = audioEnabled ? '🔊' : '🔇';
-            if (audioEnabled) {
-                bgMusic.play().catch(e => console.log("Audio play failed:", e));
-                if (audioCtx.state === 'suspended') audioCtx.resume();
+        function toggleMusic() {
+            initAudio();
+            musicEnabled = !musicEnabled;
+            const btn = document.getElementById('musicToggle');
+            btn.classList.toggle('muted', !musicEnabled);
+            if (musicEnabled) {
+                elements.bgMusic.play().catch(() => { musicEnabled = false; btn.classList.add('muted'); });
             } else {
-                bgMusic.pause();
+                elements.bgMusic.pause();
             }
         }
 
-        function playSound(type) {
-            if (!audioEnabled || !audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+        function updateVolume() {
+            elements.bgMusic.volume = elements.musicVol.value;
+        }
+
+        function toggleSFX() {
+            sfxEnabled = !sfxEnabled;
+            document.getElementById('sfxToggle').classList.toggle('muted', !sfxEnabled);
+            document.getElementById('sfxToggle').innerText = sfxEnabled ? '🔊' : '🔇';
+        }
+
+        function playSFX(freq, duration, type='sine') {
+            if (!sfxEnabled) return;
+            initAudio();
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
             osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'drop') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-            } else if (type === 'win') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-            }
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
         }
 
-        function createBoard() {
-            boardElement.innerHTML = '';
+        // --- Game Logic ---
+        function createBoardUI() {
+            elements.board.innerHTML = '';
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
-                    const slot = document.createElement('div');
-                    slot.classList.add('slot');
-                    slot.dataset.row = r;
-                    slot.dataset.col = c;
-                    slot.addEventListener('click', () => playerMove(c));
-                    boardElement.appendChild(slot);
+                    const div = document.createElement('div');
+                    div.className = 'slot';
+                    div.onclick = () => handleInput(c);
+                    elements.board.appendChild(div);
                 }
             }
         }
 
         function setMode(mode) {
-            if (currentRoomId) {
-                db.ref('rooms/' + currentRoomId).off();
-                currentRoomId = null;
-                roomInfoElement.innerText = '';
-                myPlayerNum = null;
-            }
-            
+            if (currentRoom) db.ref('rooms/' + currentRoom).off();
             gameMode = mode;
-            document.getElementById('pvcBtn').className = mode === 'pvc' ? 'active-mode' : 'secondary';
-            document.getElementById('pvpBtn').className = mode === 'pvp' ? 'active-mode' : 'secondary';
-            document.getElementById('onlineBtn').className = mode === 'online' ? 'active-mode multiplayer' : 'multiplayer';
+            currentRoom = null; myNum = null;
+            elements.room.style.display = 'none';
+            elements.p2Label.innerText = mode === 'pvc' ? 'Computer' : (mode === 'pvp' ? 'Player 2' : 'Opponent');
+            elements.p2Name.disabled = mode !== 'pvp';
+            if (mode === 'pvc') elements.p2Name.value = "AI Bot";
             
-            p2Label.innerText = mode === 'pvc' ? "Computer" : (mode === 'online' ? "Opponent" : "Player 2");
-            p2Input.disabled = (mode === 'pvc' || mode === 'online');
+            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            if (mode === 'pvc') document.getElementById('pvcBtn').classList.add('active');
+            if (mode === 'pvp') document.getElementById('pvpBtn').classList.add('active');
             
-            if (mode === 'pvc') p2Input.value = "Computer";
             resetGame();
         }
 
-        // --- Online Multiplayer Logic ---
-
-        function startOnlineMultiplayer() {
-            const roomId = Math.floor(1000 + Math.random() * 9000);
-            const promptId = prompt("Enter Room ID to join, or leave blank to create a new one:", roomId);
-            if (promptId === null) return;
-            joinRoom(promptId || roomId);
-        }
-
-        function joinRoom(roomId) {
-            setMode('online');
-            currentRoomId = roomId;
-            const roomRef = db.ref('rooms/' + roomId);
-
-            roomRef.once('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    // Create new room as Player 1
-                    myPlayerNum = 1;
-                    roomRef.set({
-                        board: Array(ROWS * COLS).fill(0),
-                        turn: 1,
-                        p1Name: p1Input.value || "Player 1",
-                        p2Name: "Waiting...",
-                        gameActive: true
-                    });
-                } else {
-                    // Join existing room as Player 2
-                    myPlayerNum = 2;
-                    roomRef.update({
-                        p2Name: p1Input.value || "Player 2"
-                    });
-                }
-                
-                roomInfoElement.innerText = "Room ID: " + roomId + " (You are Player " + myPlayerNum + ")";
-                listenToRoom(roomId);
-            });
-        }
-
-        function listenToRoom(roomId) {
-            db.ref('rooms/' + roomId).on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-
-                // Sync board
-                const flatBoard = data.board;
-                for (let i = 0; i < flatBoard.length; i++) {
-                    const r = Math.floor(i / COLS);
-                    const c = i % COLS;
-                    if (board[r][c] !== flatBoard[i]) {
-                        board[r][c] = flatBoard[i];
-                        updateUISlot(r, c, flatBoard[i]);
-                    }
-                }
-
-                currentPlayer = data.turn;
-                gameActive = data.gameActive;
-                p1Input.value = data.p1Name;
-                p2Input.value = data.p2Name;
-
-                if (!gameActive) {
-                    const winner = data.winner;
-                    statusElement.innerText = winner === 'draw' ? "It's a Draw! 🤝" : (winner === 1 ? data.p1Name : data.p2Name) + " Wins! 🎉";
-                } else {
-                    updateStatusText();
-                }
-            });
-        }
-
-        function playerMove(col) {
+        function handleInput(col) {
             if (!gameActive) return;
             if (gameMode === 'pvc' && currentPlayer === 2) return;
-            if (gameMode === 'online' && currentPlayer !== myPlayerNum) return;
-            
-            initAudioContext();
-            handleMove(col);
+            if (gameMode === 'online' && currentPlayer !== myNum) return;
+            initAudio();
+            makeMove(col);
         }
 
-        function handleMove(col) {
-            let row = -1;
-            for (let r = ROWS - 1; r >= 0; r--) {
-                if (board[r][col] === 0) { row = r; break; }
-            }
+        function makeMove(col) {
+            const row = getLowestRow(col);
             if (row === -1) return;
 
             if (gameMode !== 'online') {
-                playSound('drop');
                 board[row][col] = currentPlayer;
-                updateUISlot(row, col, currentPlayer);
-
-                if (checkWin(row, col, currentPlayer)) {
-                    playSound('win');
-                    const winner = currentPlayer === 1 ? p1Input.value : p2Input.value;
-                    endGame(winner + " Wins! 🎉");
-                    return;
-                }
-
-                if (board.flat().every(cell => cell !== 0)) {
-                    endGame("It's a Draw! 🤝");
-                    return;
-                }
-
+                syncUI();
+                playSFX(150, 0.1);
+                if (checkWin(row, col)) return announceWin();
+                if (board.flat().every(v => v !== 0)) return announceDraw();
                 currentPlayer = currentPlayer === 1 ? 2 : 1;
-                updateStatusText();
-
-                if (gameMode === 'pvc' && currentPlayer === 2) {
-                    setTimeout(computerMove, 600);
-                }
+                updateStatus();
+                if (gameMode === 'pvc' && currentPlayer === 2) setTimeout(aiMove, 600);
             } else {
-                // Online Move
-                const newBoard = board.flat();
-                newBoard[row * COLS + col] = myPlayerNum;
-                
-                let nextTurn = myPlayerNum === 1 ? 2 : 1;
-                let isWon = checkWin(row, col, myPlayerNum);
-                let isDraw = !isWon && newBoard.every(cell => cell !== 0);
-
-                db.ref('rooms/' + currentRoomId).update({
-                    board: newBoard,
-                    turn: nextTurn,
-                    gameActive: !isWon && !isDraw,
-                    winner: isWon ? myPlayerNum : (isDraw ? 'draw' : null)
+                const flat = board.flat();
+                flat[row * COLS + col] = myNum;
+                const win = checkWin(row, col, myNum);
+                db.ref('rooms/' + currentRoom).update({
+                    board: flat,
+                    turn: myNum === 1 ? 2 : 1,
+                    active: !win,
+                    winner: win ? myNum : null
                 });
-                playSound('drop');
+                playSFX(150, 0.1);
             }
         }
 
-        // --- Shared Helpers ---
-
-        function computerMove() {
-            if (!gameActive) return;
-            let move = findBestMove();
-            handleMove(move);
+        function aiMove() {
+            let col = findBestMove();
+            makeMove(col);
         }
 
         function findBestMove() {
-            for (let c = 0; c < COLS; c++) {
-                let r = getLowestRow(c);
-                if (r !== -1 && simWin(r, c, 2)) return c;
+            for (let c = 0; c < COLS; c++) { 
+                let r = getLowestRow(c); 
+                if (r !== -1) {
+                    board[r][c] = 2; if (checkWin(r, c)) { board[r][c] = 0; return c; }
+                    board[r][c] = 1; if (checkWin(r, c)) { board[r][c] = 0; return c; }
+                    board[r][c] = 0;
+                }
             }
-            for (let c = 0; c < COLS; c++) {
-                let r = getLowestRow(c);
-                if (r !== -1 && simWin(r, c, 1)) return c;
-            }
-            const preferred = [3, 2, 4, 1, 5, 0, 6];
-            for (let c of preferred) {
-                if (getLowestRow(c) !== -1) return c;
-            }
+            const prefs = [3, 2, 4, 1, 5, 0, 6];
+            for (let c of prefs) if (getLowestRow(c) !== -1) return c;
             return 0;
         }
 
-        function getLowestRow(col) {
-            for (let r = ROWS - 1; r >= 0; r--) {
-                if (board[r][col] === 0) return r;
-            }
+        function getLowestRow(c) {
+            for (let r = ROWS - 1; r >= 0; r--) if (board[r][c] === 0) return r;
             return -1;
         }
 
-        function simWin(r, c, player) {
-            board[r][c] = player;
-            const won = checkWin(r, c, player);
-            board[r][c] = 0;
-            return won;
+        function syncUI() {
+            const slots = elements.board.children;
+            board.flat().forEach((val, i) => {
+                slots[i].className = 'slot' + (val === 1 ? ' player1 filled' : (val === 2 ? ' player2 filled' : ''));
+            });
         }
 
-        function updateStatusText() {
-            const name1 = p1Input.value || "Player 1";
-            const name2 = p2Input.value || "Player 2";
-            
-            if (gameActive) {
-                if (gameMode === 'online') {
-                    if (currentPlayer === myPlayerNum) {
-                        statusElement.innerText = "Your Turn (" + (myPlayerNum === 1 ? "Red" : "Yellow") + ")";
-                    } else {
-                        statusElement.innerText = "Waiting for Opponent...";
-                    }
-                } else if (gameMode === 'pvc') {
-                    statusElement.innerText = currentPlayer === 1 ? name1 + "'s Turn" : "Computer Thinking...";
-                } else {
-                    statusElement.innerText = (currentPlayer === 1 ? name1 : name2) + "'s Turn";
-                }
-            }
-            statusElement.style.color = currentPlayer === 1 ? 'var(--player1-color)' : 'var(--player2-color)';
-        }
-
-        function updateUISlot(row, col, player) {
-            const index = row * COLS + col;
-            const slot = boardElement.children[index];
-            if (player === 0) {
-                slot.className = 'slot';
+        function updateStatus() {
+            if (!gameActive) return;
+            const n1 = elements.p1Name.value || "P1", n2 = elements.p2Name.value || "P2";
+            if (gameMode === 'online') {
+                elements.status.innerText = (currentPlayer === myNum) ? "Your Turn!" : "Waiting...";
             } else {
-                slot.classList.add('filled', player === 1 ? 'player1' : 'player2');
+                elements.status.innerText = (currentPlayer === 1 ? n1 : n2) + "'s Turn";
             }
+            elements.status.style.color = currentPlayer === 1 ? 'var(--player1-color)' : 'var(--player2-color)';
         }
 
-        function checkWin(r, c, player) {
-            const directions = [[[0, 1], [0, -1]], [[1, 0], [-1, 0]], [[1, 1], [-1, -1]], [[1, -1], [-1, 1]]];
-            for (const dir of directions) {
+        function checkWin(r, c, p = currentPlayer) {
+            const dirs = [[[0,1],[0,-1]], [[1,0],[-1,0]], [[1,1],[-1,-1]], [[1,-1],[-1,1]]];
+            return dirs.some(d => {
                 let count = 1;
-                for (const [dr, dc] of dir) {
-                    let row = r + dr, col = c + dc;
-                    while (row >= 0 && row < ROWS && col >= 0 && col < COLS && board[row][col] === player) {
-                        count++; row += dr; col += dc;
+                d.forEach(([dr, dc]) => {
+                    let nr = r + dr, nc = c + dc;
+                    while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc] === p) {
+                        count++; nr += dr; nc += dc;
                     }
-                }
-                if (count >= 4) return true;
-            }
-            return false;
+                });
+                return count >= 4;
+            });
         }
 
-        function endGame(msg) {
+        function announceWin() {
             gameActive = false;
-            statusElement.innerText = msg;
+            const n1 = elements.p1Name.value || "P1", n2 = elements.p2Name.value || "P2";
+            elements.status.innerText = (currentPlayer === 1 ? n1 : n2) + " WINS! 🎉";
+            playSFX(440, 0.5, 'square');
         }
+
+        function announceDraw() { gameActive = false; elements.status.innerText = "It's a Draw! 🤝"; }
 
         function resetGame() {
-            if (gameMode === 'online') {
-                db.ref('rooms/' + currentRoomId).update({
-                    board: Array(ROWS * COLS).fill(0),
-                    turn: 1,
-                    gameActive: true,
-                    winner: null
-                });
-            } else {
-                board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-                currentPlayer = 1;
-                gameActive = true;
-                createBoard();
-                updateStatusText();
+            board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            currentPlayer = 1; gameActive = true;
+            if (gameMode === 'online' && myNum === 1) {
+                db.ref('rooms/' + currentRoom).update({ board: board.flat(), turn: 1, active: true, winner: null });
             }
+            createBoardUI(); updateStatus();
         }
 
-        createBoard();
-        setMode('pvc'); // Start in computer mode
+        // --- Multiplayer Functions ---
+        function createRoom() {
+            const id = Math.floor(1000 + Math.random() * 9000);
+            gameMode = 'online'; myNum = 1; currentRoom = id;
+            db.ref('rooms/' + id).set({
+                board: Array(ROWS * COLS).fill(0), turn: 1, active: true,
+                p1: elements.p1Name.value || "Raghav", p2: "Waiting..."
+            });
+            startRoom(id);
+        }
+
+        function joinRoom() {
+            const id = prompt("Enter 4-Digit Room ID:");
+            if (!id) return;
+            db.ref('rooms/' + id).once('value', snap => {
+                if (!snap.exists()) return alert("Room not found!");
+                gameMode = 'online'; myNum = 2; currentRoom = id;
+                db.ref('rooms/' + id).update({ p2: elements.p1Name.value || "Player 2" });
+                startRoom(id);
+            });
+        }
+
+        function startRoom(id) {
+            elements.room.innerText = "ROOM ID: " + id;
+            elements.room.style.display = 'block';
+            elements.p2Label.innerText = "Opponent";
+            elements.p2Name.disabled = true;
+            elements.status.innerText = "Connected!";
+            
+            db.ref('rooms/' + id).on('value', snap => {
+                const d = snap.val(); if (!d) return;
+                const flat = d.board;
+                for (let i = 0; i < flat.length; i++) board[Math.floor(i/COLS)][i%COLS] = flat[i];
+                currentPlayer = d.turn; gameActive = d.active;
+                elements.p1Name.value = d.p1; elements.p2Name.value = d.p2;
+                syncUI(); updateStatus();
+                if (d.winner) { currentPlayer = d.winner; announceWin(); }
+            });
+        }
+
+        createBoardUI();
+        updateVolume();
     </script>
 </body>
 </html>
