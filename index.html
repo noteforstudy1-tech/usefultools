@@ -395,12 +395,14 @@
             margin-top: 2rem;
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 1rem;
             background: var(--switcher-bg);
             padding: 1rem 1.5rem;
             border-radius: 50px;
             border: 1px solid rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(5px);
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .audio-group {
@@ -424,11 +426,176 @@
             color: #64748b;
             opacity: 0.7;
             transition: all 0.2s;
+            position: relative;
         }
 
         .icon-btn:hover { opacity: 1; transform: scale(1.1); }
         .icon-btn.active-icon { opacity: 1; color: var(--accent-color); }
         .icon-btn.muted { color: #ef4444; opacity: 1; }
+
+        /* Chat Panel */
+        .chat-panel {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100%;
+            background: var(--board-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-panel.open {
+            transform: translateX(-320px);
+        }
+
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .chat-msg {
+            padding: 0.6rem 1rem;
+            border-radius: 15px;
+            max-width: 80%;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .chat-msg.sent {
+            background: var(--accent-color);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-msg.received {
+            background: var(--slot-color);
+            color: var(--text-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        #chatInput {
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            background: var(--card-bg);
+            color: var(--text-color);
+            width: auto;
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.6rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            border: 2px solid var(--bg-color);
+        }
+
+        /* Tutorial Modal */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .tutorial-modal {
+            background: var(--card-bg);
+            width: 500px;
+            max-width: 90%;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tutorial-tabs {
+            display: flex;
+            background: var(--switcher-bg);
+            padding: 0.5rem;
+            gap: 0.2rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.8rem;
+            font-size: 0.8rem;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .tab-content {
+            padding: 2rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+            color: var(--text-color);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+        }
 
         @media (max-width: 600px) {
             .slot { width: 40px; height: 40px; }
@@ -445,6 +612,8 @@
                 aspect-ratio: 1;
                 padding: 10px;
             }
+            .chat-panel { width: 85%; right: -90%; }
+            .chat-panel.open { transform: translateX(-105%); }
         }
     </style>
 </head>
@@ -535,6 +704,54 @@
                 <button class="icon-btn active-icon" id="sfxToggle" onclick="toggleSFX()">🔊</button>
                 <input type="range" class="volume-slider" id="sfxVol" min="0" max="1" step="0.05" value="0.8" oninput="updateVolume()">
             </div>
+            <div style="position: relative; display: flex; gap: 1rem; margin-left: 0.5rem;">
+                <button class="icon-btn" id="chatToggle" onclick="toggleChat()">💬 <span class="badge" id="chatBadge">0</span></button>
+                <button class="icon-btn" id="helpToggle" onclick="toggleTutorial()">❓</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <h3 style="margin:0; color: var(--accent-color);">Live Chat</h3>
+            <button class="icon-btn" onclick="toggleChat()">✕</button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="handleChatKey(event)">
+            <button class="primary" onclick="sendChat()" style="padding: 0.5rem 1rem;">Send</button>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-modal">
+            <div class="tutorial-tabs">
+                <button class="tab-btn active" onclick="showTab('tab-c4')">Connect 4</button>
+                <button class="tab-btn" onclick="showTab('tab-ttt')">Tic Tac Toe</button>
+                <button class="tab-btn" onclick="showTab('tab-db')">Dots & Boxes</button>
+                <button class="tab-btn" onclick="showTab('tab-how')">How to Connect</button>
+            </div>
+            <div id="tab-c4" class="tab-content active">
+                <h3>Connect 4</h3>
+                <p>Drop your red/blue discs into the grid. First to get 4 in a row (horizontal, vertical, or diagonal) wins!</p>
+            </div>
+            <div id="tab-ttt" class="tab-content">
+                <h3>Tic Tac Toe</h3>
+                <p>Classic 3x3 game. Get 3 in a row to win!</p>
+            </div>
+            <div id="tab-db" class="tab-content">
+                <h3>Dots & Boxes</h3>
+                <p>Click on the lines to draw them. If you complete a 1x1 box, you get a point and an EXTRA TURN! Most boxes wins.</p>
+            </div>
+            <div id="tab-how" class="tab-content">
+                <h3>How to Connect</h3>
+                <p>Click 'Create Room' to get a 4-digit ID. Give this to your friend. They click 'Join Room' and enter your ID. Boom, you're gaming!</p>
+            </div>
+            <div style="padding: 1rem; text-align: right; background: var(--switcher-bg);">
+                <button class="primary" onclick="toggleTutorial()">Close</button>
+            </div>
         </div>
     </div>
 
@@ -552,6 +769,8 @@
         let musicEnabled = true, sfxEnabled = true;
         let scores = { p1: 0, p2: 0, draws: 0 };
         let currentTheme = 'cream';
+        let unreadCount = 0;
+        let isChatOpen = false;
 
         const elements = {
             board: document.getElementById('board'),
@@ -589,6 +808,62 @@
             currentTheme = currentTheme === 'cream' ? 'dark' : 'cream';
             document.body.classList.toggle('dark-mode', currentTheme === 'dark');
             document.getElementById('themeToggle').innerText = currentTheme === 'cream' ? '🌙' : '☀️';
+        }
+
+        // --- Chat & Tutorial Logic ---
+        function toggleChat() {
+            isChatOpen = !isChatOpen;
+            document.getElementById('chatPanel').classList.toggle('open', isChatOpen);
+            if (isChatOpen) {
+                unreadCount = 0;
+                updateBadge();
+            }
+        }
+
+        function updateBadge() {
+            const badge = document.getElementById('chatBadge');
+            badge.innerText = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addChatMessage('sent', msg);
+            if (conn && conn.open) {
+                sendData({ type: 'chat', message: msg });
+            }
+            input.value = '';
+        }
+
+        function handleChatKey(e) { if (e.key === 'Enter') sendChat(); }
+
+        function addChatMessage(type, text) {
+            const container = document.getElementById('chatMessages');
+            const msgEl = document.createElement('div');
+            msgEl.className = `chat-msg ${type}`;
+            msgEl.innerText = text;
+            container.appendChild(msgEl);
+            container.scrollTop = container.scrollHeight;
+
+            if (type === 'received' && !isChatOpen) {
+                unreadCount++;
+                updateBadge();
+            }
+        }
+
+        function toggleTutorial() {
+            const overlay = document.getElementById('tutorialOverlay');
+            overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
         }
 
         // --- Game Switcher ---
@@ -1243,7 +1518,7 @@
                 let count = 1;
                 for (let [dr, dc] of d) {
                     let nr = r + dr, nc = c + dc;
-                    while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && b[nr][nc] === p) { count++; nr += dr; nc += dc; }
+                    while (nr >= 0 && nr < ROWS && nc >= 0 && nr < COLS && b[nr][nc] === p) { count++; nr += dr; nc += dc; }
                 }
                 return count >= 4;
             });
@@ -1378,6 +1653,8 @@
                     resetGame();
                 } else if (data.type === 'switchGame') {
                     switchGame(data.game);
+                } else if (data.type === 'chat') {
+                    addChatMessage('received', data.message);
                 }
             });
             conn.on('close', () => { alert("Opponent Disconnected"); setMode('pvc'); });
