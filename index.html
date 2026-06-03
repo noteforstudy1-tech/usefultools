@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect 4 Pro | Raghav Parashar</title>
+    <title>Arcade Hub | Pro Gaming</title>
     <style>
         :root {
             --bg-color: #0f172a;
-            --board-color: #1e293b;
-            --slot-color: #334155;
+            --board-color: rgba(30, 41, 59, 0.8);
+            --slot-color: rgba(51, 65, 85, 0.5);
             --player1-color: #ef4444;
             --player2-color: #f59e0b;
             --text-color: #f8fafc;
@@ -18,7 +18,8 @@
 
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-color);
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            background-attachment: fixed;
             color: var(--text-color);
             display: flex;
             flex-direction: column;
@@ -35,7 +36,14 @@
             align-items: center;
             gap: 1rem;
             max-width: 95%;
-            padding: 1rem;
+            padding: 2.5rem;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 24px;
+            margin: 2rem 0;
         }
 
         h1 {
@@ -47,12 +55,83 @@
         }
 
         .made-by {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #94a3b8;
             margin-bottom: 0.5rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 600;
+        }
+
+        .game-switcher {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.5rem;
+            border-radius: 15px;
+            margin-bottom: 0.5rem;
+        }
+
+        .switcher-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: 700;
+        }
+
+        .switcher-btn.active {
+            background: var(--accent-color);
+            color: var(--bg-color);
+        }
+
+        .scoreboard {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 0.8rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.6rem 1.2rem;
+            border-radius: 14px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+
+        .score-item.active-p1 {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.1);
+        }
+
+        .score-item.active-p2 {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.2);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
+        }
+
+        .score-val {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .score-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
         }
 
         .player-inputs {
@@ -76,7 +155,7 @@
         }
 
         input[type="text"] {
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.8);
             border: 2px solid #334155;
             color: white;
             padding: 0.6rem;
@@ -121,17 +200,22 @@
             border: 1px solid var(--multi-color);
         }
 
-        .board {
+        .board, .dots-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            grid-template-rows: repeat(6, 1fr);
-            gap: 12px;
             background-color: var(--board-color);
             padding: 20px;
             border-radius: 24px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border: 6px solid #334155;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.5s ease-out;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .board { gap: 12px; }
 
         .slot {
             width: 60px;
@@ -142,6 +226,10 @@
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             box-shadow: inset 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
         }
 
         .slot:hover:not(.filled) {
@@ -151,6 +239,66 @@
 
         .slot.player1 { background-color: var(--player1-color); animation: drop 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: inset 0 -4px 10px rgba(0,0,0,0.4), 0 0 20px rgba(239, 68, 68, 0.4); }
         .slot.player2 { background-color: var(--player2-color); animation: drop 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: inset 0 -4px 10px rgba(0,0,0,0.4), 0 0 20px rgba(245, 158, 11, 0.4); }
+
+        .slot.winner {
+            animation: pulse-glow 1s infinite alternate;
+            z-index: 10;
+        }
+
+        /* Dots and Boxes Styles */
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: #94a3b8;
+            border-radius: 50%;
+            margin: auto;
+        }
+
+        .line-h {
+            width: 100%;
+            height: 12px;
+            background-color: var(--slot-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .line-v {
+            width: 12px;
+            height: 100%;
+            background-color: var(--slot-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: auto;
+        }
+
+        .line-h:hover:not(.filled), .line-v:hover:not(.filled) {
+            background-color: #475569;
+        }
+
+        .line-h.filled.player1, .line-v.filled.player1 { background-color: var(--player1-color); box-shadow: 0 0 10px var(--player1-color); }
+        .line-h.filled.player2, .line-v.filled.player2 { background-color: var(--player2-color); box-shadow: 0 0 10px var(--player2-color); }
+
+        .box {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.5rem;
+            border-radius: 4px;
+            transition: all 0.5s;
+        }
+
+        .box.player1 { background-color: rgba(239, 68, 68, 0.2); color: var(--player1-color); }
+        .box.player2 { background-color: rgba(245, 158, 11, 0.2); color: var(--player2-color); }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); box-shadow: 0 0 10px currentColor; }
+            100% { transform: scale(1.1); box-shadow: 0 0 30px currentColor; }
+        }
 
         @keyframes drop {
             0% { transform: translateY(-400px); opacity: 0; }
@@ -177,10 +325,9 @@
             display: flex;
             gap: 0.8rem;
             padding: 1rem;
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(30, 41, 59, 0.6);
             border-radius: 16px;
-            border: 2px solid #334155;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         button {
@@ -209,10 +356,11 @@
             display: flex;
             align-items: center;
             gap: 2rem;
-            background: #1e293b;
+            background: rgba(30, 41, 59, 0.6);
             padding: 1rem 2rem;
             border-radius: 50px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
         }
 
         .audio-group {
@@ -234,7 +382,7 @@
             cursor: pointer;
             padding: 0;
             color: white;
-            opacity: 0.6;
+            opacity: 0.7;
             transition: all 0.2s;
         }
 
@@ -245,25 +393,56 @@
         @media (max-width: 600px) {
             .slot { width: 40px; height: 40px; }
             h1 { font-size: 2rem; }
-            .board { padding: 12px; gap: 8px; }
+            .board, .dots-grid { padding: 12px; gap: 8px; }
             input[type="text"] { width: 110px; }
+            .scoreboard { gap: 0.5rem; padding: 0.5rem; }
+            .score-item { padding: 0.4rem 0.8rem; }
+            .dots-grid {
+                grid-template-columns: repeat(4, 8px 1fr) 8px !important;
+                grid-template-rows: repeat(4, 8px 1fr) 8px !important;
+                width: 90vw;
+                max-width: 380px;
+                aspect-ratio: 1;
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="game-container">
+        <div class="game-switcher">
+            <button class="switcher-btn active" onclick="switchGame('Connect 4')">Connect 4</button>
+            <button class="switcher-btn" onclick="switchGame('Tic Tac Toe')">Tic Tac Toe</button>
+            <button class="switcher-btn" onclick="switchGame('Dots & Boxes')">Dots & Boxes</button>
+        </div>
+
         <h1>Connect 4</h1>
         <div class="made-by">Made by Raghav Parashar</div>
 
         <div class="player-inputs">
             <div class="player-input-group">
                 <label>Player 1 (You)</label>
-                <input type="text" id="p1Name" value="Player 1" maxlength="10">
+                <input type="text" id="p1Name" value="Player 1" maxlength="10" oninput="updateScoreboard()">
             </div>
             <div class="player-input-group">
                 <label id="p2Label">Computer</label>
-                <input type="text" id="p2Name" value="AI Bot" maxlength="10">
+                <input type="text" id="p2Name" value="AI Bot" maxlength="10" oninput="updateScoreboard()">
+            </div>
+        </div>
+
+        <div class="scoreboard">
+            <div class="score-item" id="p1ScoreItem">
+                <span class="score-label" id="p1ScoreLabel">Player 1</span>
+                <span class="score-val" id="p1Wins">0</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">Draws</span>
+                <span class="score-val" id="draws">0</span>
+            </div>
+            <div class="score-item" id="p2ScoreItem">
+                <span class="score-label" id="p2ScoreLabel">AI Bot</span>
+                <span class="score-val" id="p2Wins">0</span>
             </div>
         </div>
 
@@ -276,8 +455,16 @@
 
         <div class="controls-wrapper">
             <div class="main-controls">
+                <div class="audio-group" id="difficultyContainer">
+                    <select id="difficulty" class="secondary" style="padding: 0.8rem; border-radius: 12px; background: #334155; color: white; border: none; font-weight: 700;">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard" selected>Hard</option>
+                    </select>
+                </div>
                 <button id="pvcBtn" class="primary active" onclick="setMode('pvc')">🤖 vs AI</button>
                 <button id="pvpBtn" class="secondary" onclick="setMode('pvp')">👥 Local</button>
+                <button id="undoBtn" class="secondary" onclick="undoMove()">↩️ Undo</button>
                 <button class="secondary" onclick="resetGame()">🔄 Reset</button>
             </div>
 
@@ -289,7 +476,7 @@
 
         <div class="audio-settings">
             <div class="audio-group">
-                <button class="icon-btn muted" id="musicToggle" onclick="toggleMusic()">🎵</button>
+                <button class="icon-btn" id="musicPlayPause" onclick="toggleMusic()">▶️</button>
                 <input type="range" class="volume-slider" id="musicVol" min="0" max="1" step="0.05" value="0.5" oninput="updateVolume()">
             </div>
             <div class="audio-group">
@@ -301,15 +488,17 @@
 
     <audio id="bgMusic" loop src="coolbgmusic.mp3"></audio>
 
-    <!-- PeerJS for P2P Multiplayer -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
 
     <script>
         // --- Game State ---
-        const ROWS = 6, COLS = 7;
-        let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        let activeGame = 'Connect 4';
+        let ROWS = 6, COLS = 7;
+        let board = [];
+        let moveHistory = [];
         let currentPlayer = 1, gameActive = true, gameMode = 'pvc', myNum = null;
         let musicEnabled = false, sfxEnabled = true;
+        let scores = { p1: 0, p2: 0, draws: 0 };
 
         const elements = {
             board: document.getElementById('board'),
@@ -320,20 +509,58 @@
             p2Label: document.getElementById('p2Label'),
             bgMusic: document.getElementById('bgMusic'),
             musicVol: document.getElementById('musicVol'),
-            sfxVol: document.getElementById('sfxVol')
+            sfxVol: document.getElementById('sfxVol'),
+            undoBtn: document.getElementById('undoBtn'),
+            difficultyContainer: document.getElementById('difficultyContainer'),
+            difficulty: document.getElementById('difficulty')
         };
 
-        // --- Audio Logic (Enhanced) ---
+        // --- Game Switcher ---
+        function switchGame(gameName) {
+            activeGame = gameName;
+            document.querySelector('h1').innerText = gameName;
+            document.querySelectorAll('.switcher-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText === gameName);
+            });
+            
+            if (gameName === 'Connect 4') {
+                ROWS = 6; COLS = 7;
+            } else if (gameName === 'Tic Tac Toe') {
+                ROWS = 3; COLS = 3;
+            } else if (gameName === 'Dots & Boxes') {
+                ROWS = 9; COLS = 9; // 5x5 dots, 4x4 boxes
+            }
+            
+            resetGame();
+            if (gameMode === 'online' && myNum === 1) {
+                sendData({ type: 'switchGame', game: gameName });
+            }
+        }
+
+        // --- Scoreboard ---
+        function updateScoreboard() {
+            document.getElementById('p1Wins').innerText = scores.p1;
+            document.getElementById('p2Wins').innerText = scores.p2;
+            document.getElementById('draws').innerText = scores.draws;
+            document.getElementById('p1ScoreLabel').innerText = elements.p1Name.value || "Player 1";
+            document.getElementById('p2ScoreLabel').innerText = elements.p2Name.value || "Player 2";
+            updateStatus();
+        }
+
+        // --- Audio Logic ---
         let audioCtx = null;
         function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
         function toggleMusic() {
             initAudio();
             musicEnabled = !musicEnabled;
-            const btn = document.getElementById('musicToggle');
-            btn.classList.toggle('muted', !musicEnabled);
+            const btn = document.getElementById('musicPlayPause');
+            btn.innerText = musicEnabled ? '⏸️' : '▶️';
             if (musicEnabled) {
-                elements.bgMusic.play().catch(() => { musicEnabled = false; btn.classList.add('muted'); });
+                elements.bgMusic.play().catch(() => { 
+                    musicEnabled = false; 
+                    btn.innerText = '▶️'; 
+                });
             } else {
                 elements.bgMusic.pause();
             }
@@ -357,12 +584,10 @@
             const vol = elements.sfxVol.value;
             
             if (type === 'drop') {
-                // Layered "Thump"
                 createTone(150, 40, 0.15, 'sine', vol);
                 createTone(60, 20, 0.2, 'sine', vol * 0.5);
-                createNoise(0.05, vol * 0.2); // Small click
+                createNoise(0.05, vol * 0.2);
             } else if (type === 'win') {
-                // Triumphant Chord
                 [440, 554.37, 659.25, 880].forEach((f, i) => {
                     setTimeout(() => createTone(f, f, 0.6, 'triangle', vol * 0.15), i * 100);
                 });
@@ -397,12 +622,48 @@
         // --- Game Logic ---
         function createBoardUI() {
             elements.board.innerHTML = '';
+            if (activeGame === 'Dots & Boxes') {
+                elements.board.className = 'dots-grid';
+                elements.board.style.gridTemplateColumns = 'repeat(4, 12px 60px) 12px';
+                elements.board.style.gridTemplateRows = 'repeat(4, 12px 60px) 12px';
+                elements.board.style.gap = '0';
+            } else {
+                elements.board.className = 'board';
+                elements.board.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+                elements.board.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
+                elements.board.style.gap = '12px';
+            }
+            
             for (let r = 0; r < ROWS; r++) {
                 for (let c = 0; c < COLS; c++) {
-                    const div = document.createElement('div');
-                    div.className = 'slot';
-                    div.onclick = () => handleInput(c);
-                    elements.board.appendChild(div);
+                    if (activeGame === 'Dots & Boxes') {
+                        const div = document.createElement('div');
+                        if (r % 2 === 0 && c % 2 === 0) {
+                            div.className = 'dot';
+                        } else if (r % 2 === 0 && c % 2 !== 0) {
+                            div.className = 'line-h';
+                            div.onclick = () => handleInput(c, r);
+                        } else if (r % 2 !== 0 && c % 2 === 0) {
+                            div.className = 'line-v';
+                            div.onclick = () => handleInput(c, r);
+                        } else {
+                            div.className = 'box';
+                        }
+                        elements.board.appendChild(div);
+                    } else {
+                        const div = document.createElement('div');
+                        div.className = 'slot';
+                        if (activeGame === 'Tic Tac Toe') {
+                            div.style.borderRadius = '15px';
+                            div.style.fontSize = '2.5rem';
+                            div.onclick = () => handleInput(c, r);
+                        } else {
+                            div.style.borderRadius = '50%';
+                            div.style.fontSize = '0';
+                            div.onclick = () => handleInput(c);
+                        }
+                        elements.board.appendChild(div);
+                    }
                 }
             }
         }
@@ -414,49 +675,80 @@
             elements.room.style.display = 'none';
             elements.p2Label.innerText = mode === 'pvc' ? 'Computer' : (mode === 'pvp' ? 'Player 2' : 'Opponent');
             elements.p2Name.disabled = mode !== 'pvp';
+            elements.undoBtn.disabled = mode === 'online';
+            elements.difficultyContainer.style.display = mode === 'pvc' ? 'flex' : 'none';
+            
             if (mode === 'pvc') elements.p2Name.value = "AI Bot";
             if (mode === 'pvp') elements.p2Name.value = "Player 2";
             
-            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.main-controls button').forEach(b => b.classList.remove('active'));
             if (mode === 'pvc') document.getElementById('pvcBtn').classList.add('active');
             if (mode === 'pvp') document.getElementById('pvpBtn').classList.add('active');
             
+            updateScoreboard();
             resetGame();
         }
 
-        function handleInput(col) {
+        function handleInput(col, row = null) {
             if (!gameActive) return;
             if (gameMode === 'pvc' && currentPlayer === 2) return;
             if (gameMode === 'online' && currentPlayer !== myNum) return;
             initAudio();
-            makeMove(col);
+            
+            if (activeGame === 'Connect 4') {
+                makeMove(col);
+            } else if (activeGame === 'Tic Tac Toe' || activeGame === 'Dots & Boxes') {
+                if (board[row][col] !== 0) return;
+                makeMove(col, row);
+            }
         }
 
-        function makeMove(col, fromRemote = false) {
-            const row = getLowestRow(col);
-            if (row === -1) return;
+        function makeMove(col, row = null, fromRemote = false) {
+            if (activeGame === 'Connect 4') {
+                if (row === null) row = getLowestRow(col);
+                if (row === -1) return;
+            }
 
             board[row][col] = currentPlayer;
+            let boxesCaptured = 0;
+            if (activeGame === 'Dots & Boxes') {
+                boxesCaptured = checkAndFillBoxes(row, col);
+            }
+            
+            moveHistory.push({ row, col, player: currentPlayer, boxesCaptured });
             syncUI();
             playSFX('drop');
 
-            if (checkWin(row, col)) {
-                announceWin();
-                if (gameMode === 'online' && !fromRemote) sendData({ type: 'move', col, win: true });
-                return;
-            }
+            if (activeGame !== 'Dots & Boxes') {
+                const winningSlots = checkWin(row, col);
+                if (winningSlots) {
+                    highlightWinner(winningSlots);
+                    announceWin();
+                    if (gameMode === 'online' && !fromRemote) sendData({ type: 'move', col, row, win: true, game: activeGame });
+                    return;
+                }
 
-            if (board.flat().every(v => v !== 0)) {
-                announceDraw();
-                if (gameMode === 'online' && !fromRemote) sendData({ type: 'move', col, draw: true });
-                return;
+                if (board.flat().every(v => v !== 0)) {
+                    announceDraw();
+                    if (gameMode === 'online' && !fromRemote) sendData({ type: 'move', col, row, draw: true, game: activeGame });
+                    return;
+                }
+            } else {
+                if (isAllLinesFilled()) {
+                    announceDotsBoxesWinner();
+                    if (gameMode === 'online' && !fromRemote) sendData({ type: 'move', col, row, game: activeGame });
+                    return;
+                }
             }
 
             if (gameMode === 'online' && !fromRemote) {
-                sendData({ type: 'move', col });
+                sendData({ type: 'move', col, row, game: activeGame });
             }
 
-            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            if (!(activeGame === 'Dots & Boxes' && boxesCaptured > 0)) {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+            }
+            
             updateStatus();
 
             if (gameMode === 'pvc' && currentPlayer === 2) {
@@ -464,23 +756,273 @@
             }
         }
 
-        function aiMove() {
-            let col = findBestMove();
-            makeMove(col);
+        function checkAndFillBoxes(r, c) {
+            let captured = 0;
+            const check = (br, bc) => {
+                if (br < 1 || br >= ROWS || bc < 1 || bc >= COLS) return false;
+                if (board[br][bc] !== 0) return false;
+                if (board[br-1][bc] !== 0 && board[br+1][bc] !== 0 && board[br][bc-1] !== 0 && board[br][bc+1] !== 0) {
+                    board[br][bc] = currentPlayer;
+                    captured++;
+                    return true;
+                }
+                return false;
+            };
+            if (r % 2 === 0) { check(r - 1, c); check(r + 1, c); }
+            else { check(r, c - 1); check(r, c + 1); }
+            return captured;
         }
 
-        function findBestMove() {
-            for (let c = 0; c < COLS; c++) { 
-                let r = getLowestRow(c); 
-                if (r !== -1) {
-                    board[r][c] = 2; if (checkWin(r, c)) { board[r][c] = 0; return c; }
-                    board[r][c] = 1; if (checkWin(r, c)) { board[r][c] = 0; return c; }
-                    board[r][c] = 0;
+        function isAllLinesFilled() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if ((r % 2 === 0 && c % 2 !== 0) || (r % 2 !== 0 && c % 2 === 0)) {
+                        if (board[r][c] === 0) return false;
+                    }
                 }
             }
-            const prefs = [3, 2, 4, 1, 5, 0, 6];
-            for (let c of prefs) if (getLowestRow(c) !== -1) return c;
+            return true;
+        }
+
+        function undoMove() {
+            if (gameMode === 'online' || moveHistory.length === 0) return;
+            gameActive = true;
+            document.querySelectorAll('.slot.winner').forEach(s => s.classList.remove('winner'));
+            if (gameMode === 'pvc') {
+                let lastMove;
+                do {
+                    lastMove = moveHistory.pop();
+                    if (!lastMove) break;
+                    board[lastMove.row][lastMove.col] = 0;
+                    if (activeGame === 'Dots & Boxes') clearCapturedBoxes(lastMove.row, lastMove.col);
+                } while (moveHistory.length > 0 && lastMove.player === 2);
+                currentPlayer = 1;
+            } else {
+                const m = moveHistory.pop();
+                board[m.row][m.col] = 0;
+                if (activeGame === 'Dots & Boxes') clearCapturedBoxes(m.row, m.col);
+                currentPlayer = m.player;
+            }
+            syncUI(); updateStatus();
+        }
+
+        function clearCapturedBoxes(r, c) {
+            const check = (br, bc) => {
+                if (br < 1 || br >= ROWS || bc < 1 || bc >= COLS) return;
+                board[br][bc] = 0;
+            };
+            if (r % 2 === 0) { check(r - 1, c); check(r + 1, c); }
+            else { check(r, c - 1); check(r, c + 1); }
+        }
+
+        function aiMove() {
+            if (activeGame === 'Connect 4') {
+                let col = findBestMoveConnect4();
+                makeMove(col);
+            } else if (activeGame === 'Tic Tac Toe') {
+                let move = findBestMoveTTT();
+                makeMove(move.col, move.row);
+            } else if (activeGame === 'Dots & Boxes') {
+                let move = findBestMoveDotsBoxes();
+                makeMove(move.col, move.row);
+            }
+        }
+
+        // --- Connect 4 AI ---
+        function findBestMoveConnect4() {
+            const difficulty = elements.difficulty.value;
+            if (difficulty === 'easy') {
+                const validCols = [];
+                for (let c = 0; c < COLS; c++) if (getLowestRow(c) !== -1) validCols.push(c);
+                return validCols[Math.floor(Math.random() * validCols.length)];
+            }
+            const depth = difficulty === 'medium' ? 3 : 6;
+            let bestScore = -Infinity;
+            let bestMove = 3;
+            const validCols = [];
+            for (let c = 0; c < COLS; c++) if (getLowestRow(c) !== -1) validCols.push(c);
+            validCols.sort((a, b) => Math.abs(a - 3) - Math.abs(b - 3));
+            for (let col of validCols) {
+                let row = getLowestRow(col);
+                board[row][col] = 2;
+                let score = minimaxConnect4(depth - 1, -Infinity, Infinity, false, row, col);
+                board[row][col] = 0;
+                if (score > bestScore) { bestScore = score; bestMove = col; }
+            }
+            return bestMove;
+        }
+
+        function minimaxConnect4(depth, alpha, beta, isMaximizing, lastR, lastC) {
+            if (isWinConnect4(lastR, lastC, board)) return isMaximizing ? -100000 - depth : 100000 + depth;
+            if (depth === 0 || board.flat().every(v => v !== 0)) return evaluateBoardConnect4(board);
+            if (isMaximizing) {
+                let maxEval = -Infinity;
+                for (let c of [3, 2, 4, 1, 5, 0, 6]) {
+                    let r = getLowestRow(c);
+                    if (r !== -1) {
+                        board[r][c] = 2;
+                        let eval = minimaxConnect4(depth - 1, alpha, beta, false, r, c);
+                        board[r][c] = 0;
+                        maxEval = Math.max(maxEval, eval);
+                        alpha = Math.max(alpha, eval);
+                        if (beta <= alpha) break;
+                    }
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (let c of [3, 2, 4, 1, 5, 0, 6]) {
+                    let r = getLowestRow(c);
+                    if (r !== -1) {
+                        board[r][c] = 1;
+                        let eval = minimaxConnect4(depth - 1, alpha, beta, true, r, c);
+                        board[r][c] = 0;
+                        minEval = Math.min(minEval, eval);
+                        beta = Math.min(beta, eval);
+                        if (beta <= alpha) break;
+                    }
+                }
+                return minEval;
+            }
+        }
+
+        function evaluateBoardConnect4(b) {
+            let score = 0;
+            const centerCol = 3;
+            for (let r = 0; r < ROWS; r++) if (b[r][centerCol] === 2) score += 3;
+            for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS - 3; c++) score += evalWindow(b[r][c], b[r][c+1], b[r][c+2], b[r][c+3]);
+            for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS - 3; r++) score += evalWindow(b[r][c], b[r+1][c], b[r+2][c], b[r+3][c]);
+            for (let r = 0; r < ROWS - 3; r++) for (let c = 0; c < COLS - 3; c++) score += evalWindow(b[r][c], b[r+1][c+1], b[r+2][c+2], b[r+3][c+3]);
+            for (let r = 0; r < ROWS - 3; r++) for (let c = 3; c < COLS; c++) score += evalWindow(b[r][c], b[r+1][c-1], b[r+2][c-2], b[r+3][c-3]);
+            return score;
+        }
+
+        function evalWindow(v1, v2, v3, v4) {
+            let p1 = 0, p2 = 0;
+            [v1, v2, v3, v4].forEach(v => { if (v === 1) p1++; else if (v === 2) p2++; });
+            if (p2 === 4) return 1000;
+            if (p2 === 3 && p1 === 0) return 10;
+            if (p2 === 2 && p1 === 0) return 2;
+            if (p1 === 3 && p2 === 0) return -10;
+            if (p1 === 4) return -1000;
             return 0;
+        }
+
+        // --- Tic Tac Toe AI ---
+        function findBestMoveTTT() {
+            const difficulty = elements.difficulty.value;
+            if (difficulty === 'easy') {
+                const available = [];
+                for(let r=0; r<3; r++) for(let c=0; c<3; c++) if(board[r][c] === 0) available.push({r, c});
+                const move = available[Math.floor(Math.random() * available.length)];
+                return { col: move.c, row: move.r };
+            }
+            let bestScore = -Infinity;
+            let move;
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 3; c++) {
+                    if (board[r][c] === 0) {
+                        board[r][c] = 2;
+                        let score = minimaxTTT(board, 0, false);
+                        board[r][c] = 0;
+                        if (score > bestScore) { bestScore = score; move = { row: r, col: c }; }
+                    }
+                }
+            }
+            return move;
+        }
+
+        function minimaxTTT(b, depth, isMaximizing) {
+            let result = checkWinnerSimpleTTT(b);
+            if (result !== null) {
+                if (result === 2) return 10 - depth;
+                if (result === 1) return depth - 10;
+                if (result === 'draw') return 0;
+            }
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        if (b[r][c] === 0) {
+                            b[r][c] = 2;
+                            let score = minimaxTTT(b, depth + 1, false);
+                            b[r][c] = 0;
+                            bestScore = Math.max(score, bestScore);
+                        }
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let r = 0; r < 3; r++) {
+                    for (let c = 0; c < 3; c++) {
+                        if (b[r][c] === 0) {
+                            b[r][c] = 1;
+                            let score = minimaxTTT(b, depth + 1, true);
+                            b[r][c] = 0;
+                            bestScore = Math.min(score, bestScore);
+                        }
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        function checkWinnerSimpleTTT(b) {
+            for (let i = 0; i < 3; i++) {
+                if (b[i][0] !== 0 && b[i][0] === b[i][1] && b[i][1] === b[i][2]) return b[i][0];
+                if (b[0][i] !== 0 && b[0][i] === b[1][i] && b[1][i] === b[2][i]) return b[0][i];
+            }
+            if (b[0][0] !== 0 && b[0][0] === b[1][1] && b[1][1] === b[2][2]) return b[0][0];
+            if (b[0][2] !== 0 && b[0][2] === b[1][1] && b[1][1] === b[2][0]) return b[0][2];
+            if (b.flat().every(cell => cell !== 0)) return 'draw';
+            return null;
+        }
+
+        // --- Dots & Boxes AI ---
+        function findBestMoveDotsBoxes() {
+            const difficulty = elements.difficulty.value;
+            const lines = [];
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (((r % 2 === 0 && c % 2 !== 0) || (r % 2 !== 0 && c % 2 === 0)) && board[r][c] === 0) lines.push({ r, c });
+                }
+            }
+            for (let line of lines) if (completesBox(line.r, line.c)) return { col: line.c, row: line.r };
+            if (difficulty === 'easy') return lines[Math.floor(Math.random() * lines.length)];
+            if (difficulty === 'hard') {
+                const safeLines = lines.filter(line => !givesBox(line.r, line.c));
+                if (safeLines.length > 0) return safeLines[Math.floor(Math.random() * safeLines.length)];
+            }
+            return lines[Math.floor(Math.random() * lines.length)];
+        }
+
+        function completesBox(r, c) {
+            const check = (br, bc) => {
+                let filled = 0;
+                if (board[br-1][bc] !== 0 || (r === br-1 && c === bc)) filled++;
+                if (board[br+1][bc] !== 0 || (r === br+1 && c === bc)) filled++;
+                if (board[br][bc-1] !== 0 || (r === br && c === bc-1)) filled++;
+                if (board[br][bc+1] !== 0 || (r === br && c === bc+1)) filled++;
+                return filled === 4;
+            };
+            if (r % 2 === 0) { if (r > 0 && check(r-1, c)) return true; if (r < ROWS-1 && check(r+1, c)) return true; }
+            else { if (c > 0 && check(r, c-1)) return true; if (c < COLS-1 && check(r, c+1)) return true; }
+            return false;
+        }
+
+        function givesBox(r, c) {
+            const check = (br, bc) => {
+                let filled = 0;
+                if (board[br-1][bc] !== 0 || (r === br-1 && c === bc)) filled++;
+                if (board[br+1][bc] !== 0 || (r === br+1 && c === bc)) filled++;
+                if (board[br][bc-1] !== 0 || (r === br && c === bc-1)) filled++;
+                if (board[br][bc+1] !== 0 || (r === br && c === bc+1)) filled++;
+                return filled === 3;
+            };
+            if (r % 2 === 0) { if (r > 0 && check(r-1, c)) return true; if (r < ROWS-1 && check(r+1, c)) return true; }
+            else { if (c > 0 && check(r, c-1)) return true; if (c < COLS-1 && check(r, c+1)) return true; }
+            return false;
         }
 
         function getLowestRow(c) {
@@ -490,35 +1032,106 @@
 
         function syncUI() {
             const slots = elements.board.children;
-            board.flat().forEach((val, i) => {
-                slots[i].className = 'slot' + (val === 1 ? ' player1 filled' : (val === 2 ? ' player2 filled' : ''));
-            });
+            if (activeGame === 'Dots & Boxes') {
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const val = board[r][c], idx = r * COLS + c, el = slots[idx];
+                        if (r % 2 === 0 && c % 2 !== 0) el.className = 'line-h' + (val === 1 ? ' filled player1' : (val === 2 ? ' filled player2' : ''));
+                        else if (r % 2 !== 0 && c % 2 === 0) el.className = 'line-v' + (val === 1 ? ' filled player1' : (val === 2 ? ' filled player2' : ''));
+                        else if (r % 2 !== 0 && c % 2 !== 0) {
+                            el.className = 'box' + (val === 1 ? ' player1' : (val === 2 ? ' player2' : ''));
+                            el.innerText = val === 1 ? (elements.p1Name.value[0] || '1') : (val === 2 ? (elements.p2Name.value[0] || '2') : '');
+                        }
+                    }
+                }
+            } else {
+                board.flat().forEach((val, i) => {
+                    const slot = slots[i];
+                    if (activeGame === 'Connect 4') {
+                        slot.className = 'slot' + (val === 1 ? ' player1 filled' : (val === 2 ? ' player2 filled' : ''));
+                        slot.innerText = '';
+                    } else if (activeGame === 'Tic Tac Toe') {
+                        slot.className = 'slot' + (val !== 0 ? ' filled' : '');
+                        slot.innerText = val === 1 ? 'X' : (val === 2 ? 'O' : '');
+                        slot.style.color = val === 1 ? 'var(--player1-color)' : 'var(--player2-color)';
+                        slot.style.textShadow = val !== 0 ? `0 0 10px ${val === 1 ? 'var(--player1-color)' : 'var(--player2-color)'}` : 'none';
+                    }
+                });
+            }
         }
 
         function updateStatus() {
             const n1 = elements.p1Name.value || "P1", n2 = elements.p2Name.value || "P2";
+            
+            // Active player indicators
+            document.getElementById('p1ScoreItem').classList.toggle('active-p1', currentPlayer === 1 && gameActive);
+            document.getElementById('p2ScoreItem').classList.toggle('active-p2', currentPlayer === 2 && gameActive);
+
             if (!gameActive) return;
             
-            if (gameMode === 'online') {
-                elements.status.innerText = (currentPlayer === myNum) ? "Your Turn!" : "Waiting for Opponent...";
-            } else {
-                elements.status.innerText = (currentPlayer === 1 ? n1 : n2) + "'s Turn";
-            }
+            if (gameMode === 'online') elements.status.innerText = (currentPlayer === myNum) ? "Your Turn!" : "Waiting for Opponent...";
+            else elements.status.innerText = (currentPlayer === 1 ? n1 : n2) + "'s Turn";
             elements.status.style.color = currentPlayer === 1 ? 'var(--player1-color)' : 'var(--player2-color)';
         }
 
-        function checkWin(r, c, p = currentPlayer) {
-            const dirs = [[[0,1],[0,-1]], [[1,0],[-1,0]], [[1,1],[-1,-1]], [[1,-1],[-1,1]]];
+        function checkWin(r, c) {
+            if (activeGame === 'Connect 4') return checkWinConnect4(r, c);
+            if (activeGame === 'Tic Tac Toe') return checkWinTTT(r, c);
+            return null;
+        }
+
+        function checkWinConnect4(r, c, p = board[r][c], b = board) {
+            const dirs = [[[0, 1], [0, -1]], [[1, 0], [-1, 0]], [[1, 1], [-1, -1]], [[1, -1], [-1, 1]]];
+            for (let d of dirs) {
+                let slots = [{ r, c }];
+                for (let [dr, dc] of d) {
+                    let nr = r + dr, nc = c + dc;
+                    while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && b[nr][nc] === p) { slots.push({ r: nr, c: nc }); nr += dr; nc += dc; }
+                }
+                if (slots.length >= 4) return slots;
+            }
+            return null;
+        }
+
+        function checkWinTTT(r, c) {
+            const b = board;
+            for (let i = 0; i < 3; i++) {
+                if (b[i][0] !== 0 && b[i][0] === b[i][1] && b[i][1] === b[i][2]) return [{r:i, c:0}, {r:i, c:1}, {r:i, c:2}];
+                if (b[0][i] !== 0 && b[0][i] === b[1][i] && b[1][i] === b[2][i]) return [{r:0, c:i}, {r:1, c:i}, {r:2, c:i}];
+            }
+            if (b[0][0] !== 0 && b[0][0] === b[1][1] && b[1][1] === b[2][2]) return [{r:0, c:0}, {r:1, c:1}, {r:2, c:2}];
+            if (b[0][2] !== 0 && b[0][2] === b[1][1] && b[1][1] === b[2][0]) return [{r:0, c:2}, {r:1, c:1}, {r:2, c:0}];
+            return null;
+        }
+
+        function isWinConnect4(r, c, b) {
+            if (r === -1 || r === undefined) return false;
+            const p = b[r][c];
+            const dirs = [[[0, 1], [0, -1]], [[1, 0], [-1, 0]], [[1, 1], [-1, -1]], [[1, -1], [-1, 1]]];
             return dirs.some(d => {
                 let count = 1;
-                d.forEach(([dr, dc]) => {
+                for (let [dr, dc] of d) {
                     let nr = r + dr, nc = c + dc;
-                    while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc] === p) {
-                        count++; nr += dr; nc += dc;
-                    }
-                });
+                    while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && b[nr][nc] === p) { count++; nr += dr; nc += dc; }
+                }
                 return count >= 4;
             });
+        }
+
+        function announceDotsBoxesWinner() {
+            gameActive = false;
+            let p1 = 0, p2 = 0;
+            for (let r = 1; r < ROWS; r += 2) for (let c = 1; c < COLS; c += 2) { if (board[r][c] === 1) p1++; else if (board[r][c] === 2) p2++; }
+            const n1 = elements.p1Name.value || "P1", n2 = elements.p2Name.value || "P2";
+            if (p1 > p2) { elements.status.innerText = n1 + " WINS! (" + p1 + "-" + p2 + ") 🎉"; elements.status.style.color = 'var(--player1-color)'; scores.p1++; }
+            else if (p2 > p1) { elements.status.innerText = n2 + " WINS! (" + p1 + "-" + p2 + ") 🎉"; elements.status.style.color = 'var(--player2-color)'; scores.p2++; }
+            else { elements.status.innerText = "It's a Draw! (" + p1 + "-" + p2 + ") 🤝"; elements.status.style.color = "white"; scores.draws++; }
+            playSFX('win'); updateScoreboard();
+        }
+
+        function highlightWinner(slots) {
+            const uiSlots = elements.board.children;
+            slots.forEach(slot => uiSlots[slot.r * COLS + slot.c].classList.add('winner'));
         }
 
         function announceWin() {
@@ -526,14 +1139,21 @@
             const n1 = elements.p1Name.value || "P1", n2 = elements.p2Name.value || "P2";
             elements.status.innerText = (currentPlayer === 1 ? n1 : n2) + " WINS! 🎉";
             elements.status.style.color = currentPlayer === 1 ? 'var(--player1-color)' : 'var(--player2-color)';
-            playSFX('win');
+            playSFX('win'); if (currentPlayer === 1) scores.p1++; else scores.p2++;
+            updateScoreboard();
         }
 
-        function announceDraw() { gameActive = false; elements.status.innerText = "It's a Draw! 🤝"; elements.status.style.color = "white"; }
+        function announceDraw() { 
+            gameActive = false; 
+            elements.status.innerText = "It's a Draw! 🤝"; 
+            elements.status.style.color = "white"; 
+            scores.draws++;
+            updateScoreboard();
+        }
 
         function resetGame() {
             board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
-            currentPlayer = 1; gameActive = true;
+            moveHistory = []; currentPlayer = 1; gameActive = true;
             createBoardUI(); updateStatus();
             if (gameMode === 'online' && myNum === 1) sendData({ type: 'reset' });
         }
@@ -544,50 +1164,24 @@
         function initPeer() {
             if (peer) return;
             elements.status.innerText = "Initializing Network...";
-            // Generate a random 4-digit ID
             const randomId = "raghav-" + Math.floor(1000 + Math.random() * 9000);
             peer = new Peer(randomId);
-
             peer.on('open', (id) => {
                 const shortId = id.split('-')[1];
                 elements.room.innerText = "YOUR ROOM ID: " + shortId;
                 elements.room.style.display = 'block';
                 elements.status.innerText = (myNum === 1) ? "Waiting for Opponent..." : "Connecting...";
             });
-
-            peer.on('connection', (c) => {
-                if (conn) { c.close(); return; } // Only one opponent
-                conn = c;
-                setupConnection();
-            });
-
-            peer.on('error', (err) => {
-                alert("Network Error: " + err.type);
-                setMode('pvc');
-            });
+            peer.on('connection', (c) => { if (conn) { c.close(); return; } conn = c; setupConnection(); });
+            peer.on('error', (err) => { alert("Network Error: " + err.type); setMode('pvc'); });
         }
 
-        function createRoom() {
-            setMode('online');
-            myNum = 1;
-            initPeer();
-        }
-
+        function createRoom() { setMode('online'); myNum = 1; initPeer(); }
         function joinRoom() {
             const id = prompt("Enter Opponent's 4-Digit Room ID:");
             if (!id) return;
-            setMode('online');
-            myNum = 2;
-            initPeer();
-            
-            // Wait for Peer to open before connecting
-            const checkPeer = setInterval(() => {
-                if (peer && peer.open) {
-                    clearInterval(checkPeer);
-                    conn = peer.connect("raghav-" + id);
-                    setupConnection();
-                }
-            }, 100);
+            setMode('online'); myNum = 2; initPeer();
+            const checkPeer = setInterval(() => { if (peer && peer.open) { clearInterval(checkPeer); conn = peer.connect("raghav-" + id); setupConnection(); } }, 100);
         }
 
         function setupConnection() {
@@ -595,32 +1189,27 @@
                 elements.status.innerText = "Opponent Connected!";
                 elements.p2Label.innerText = "Opponent";
                 elements.p2Name.disabled = true;
-                // Exchange names
                 sendData({ type: 'name', name: elements.p1Name.value });
             });
-
             conn.on('data', (data) => {
                 if (data.type === 'move') {
-                    makeMove(data.col, true);
+                    if (data.game && data.game !== activeGame) switchGame(data.game);
+                    makeMove(data.col, data.row, true);
                 } else if (data.type === 'name') {
-                    elements.p2Name.value = data.name;
-                    updateStatus();
+                    elements.p2Name.value = data.name; updateScoreboard();
                 } else if (data.type === 'reset') {
                     resetGame();
+                } else if (data.type === 'switchGame') {
+                    switchGame(data.game);
                 }
             });
-
-            conn.on('close', () => {
-                alert("Opponent Disconnected");
-                setMode('pvc');
-            });
+            conn.on('close', () => { alert("Opponent Disconnected"); setMode('pvc'); });
         }
 
-        function sendData(data) {
-            if (conn && conn.open) conn.send(data);
-        }
+        function sendData(data) { if (conn && conn.open) conn.send(data); }
 
-        createBoardUI();
+        resetGame();
+        updateScoreboard();
     </script>
 </body>
 </html>
