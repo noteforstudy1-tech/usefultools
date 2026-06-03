@@ -751,7 +751,7 @@
             
             updateStatus();
 
-            if (gameMode === 'pvc' && currentPlayer === 2) {
+            if (gameMode === 'pvc' && currentPlayer === 2 && gameActive) {
                 setTimeout(aiMove, 600);
             }
         }
@@ -816,6 +816,7 @@
         }
 
         function aiMove() {
+            if (!gameActive) return;
             if (activeGame === 'Connect 4') {
                 let col = findBestMoveConnect4();
                 makeMove(col);
@@ -824,7 +825,7 @@
                 makeMove(move.col, move.row);
             } else if (activeGame === 'Dots & Boxes') {
                 let move = findBestMoveDotsBoxes();
-                makeMove(move.col, move.row);
+                if (move) makeMove(move.col, move.row);
             }
         }
 
@@ -988,12 +989,29 @@
                     if (((r % 2 === 0 && c % 2 !== 0) || (r % 2 !== 0 && c % 2 === 0)) && board[r][c] === 0) lines.push({ r, c });
                 }
             }
-            for (let line of lines) if (completesBox(line.r, line.c)) return { col: line.c, row: line.r };
+            
+            if (lines.length === 0) return null;
+
+            // Priority 1: Complete boxes
+            for (let line of lines) {
+                if (completesBox(line.r, line.c)) return { col: line.c, row: line.r };
+            }
+
             if (difficulty === 'easy') return lines[Math.floor(Math.random() * lines.length)];
+
+            // Priority 2: Avoid giving boxes
+            const safeLines = lines.filter(line => !givesBox(line.r, line.c));
+            
             if (difficulty === 'hard') {
-                const safeLines = lines.filter(line => !givesBox(line.r, line.c));
+                if (safeLines.length > 0) {
+                    // Priority 3: Pick a random safe move
+                    return safeLines[Math.floor(Math.random() * safeLines.length)];
+                }
+            } else if (difficulty === 'medium') {
                 if (safeLines.length > 0) return safeLines[Math.floor(Math.random() * safeLines.length)];
             }
+
+            // Fallback: Pick random move
             return lines[Math.floor(Math.random() * lines.length)];
         }
 
